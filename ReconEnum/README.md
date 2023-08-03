@@ -386,7 +386,8 @@ The purpose of mapping a network is to create a scope and give all the possible 
 pentester can give. 
 
 Processes:
--Physical access
+
+- Physical access
   - Physical security 
   - OSINT 
   - Social Engineering
@@ -549,19 +550,105 @@ Some of the scripts are:
 Usage:
 
 ```bash
-$ nmap --script smb-protocols [SHARE] -p445
-$ nmap --script smb-security-mode [SHARE] -p445
-$ nmap --script smb-enum-sessions [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-shares [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-users [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-server-stats [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-domains [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-groups [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-services [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-ls [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ nmap --script smb-enum-shares,smb-ls [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
-$ 
+$ nmap --script smb-protocols [TARGET] -p445
+$ nmap --script smb-security-mode [TARGET] -p445
+$ nmap --script smb-enum-sessions [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-shares [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-users [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-server-stats [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-domains [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-groups [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-services [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-ls [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-shares,smb-ls [TARGET] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-os-discovery [TARGET] -p445 
 ```
 
 Notes: if an IPC share is found, it could serve as a NULL session, or an anonymous user. The print share is used
 to do exactly that, print stuff.
+
+### Windows Recon: SMB scripts lab.
+
+Objectives: 
+1. Enumerate SMB protocols and dialects.
+2. Dump SMB security information.
+3. Enumerate active sessions, users, domains, services, etc.
+
+Target is: 10.4.20.49
+
+```bash
+$ target=10.4.20.49
+$ nmap -p445 $target --script smb-protocols,smb-security-mode
+Host script results:
+| smb-protocols: 
+|   dialects: 
+|     NT LM 0.12 (SMBv1) [dangerous, but default]
+|     2.02
+|     2.10
+|     3.00
+|_    3.02
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+$ nmap -p445 $target --script smb-enum-sessions,smb-enum-shares,smb-enum-users,smb-enum-groups,smb-enum-domains,smb-enum-services --script-args smbusername=administrator,smbpassword=password
+# It's also possible to do the following:
+$ nmap -p445 $target --script smb-enum-* --script-args smbusername=administrator,smbpassword=password
+# The * selects all scripts under smb-enum-.
+# I will omit the output, as it is TOO LONG! So use -oN when doing this.
+[\/ SNIP \/]
+```
+
+## SMB: SMBmap
+
+```bash
+# For shares with SMBv1 or IPC enabled.
+$ smbmap -u guest -p "" -d . -H {target}
+# For shares we have admin access (or user access) to.
+$ smbmap -u {user} -p {password} -d . -H {target} -x {command to execute}
+# List shares.
+$ smbmap -u {user} -p {password} -d . -H {target} -L 
+# Read files from a share.
+$ smbmap -u {user} -p {password} -d . -H {target} -r "{share}$"
+# Upload a file.
+$ smbmap -u {user} -p {password} -d . -H {target} --upload '/path/to/file' '{share}$\path\to\upload'
+# Download a file
+$ smbmap -u {user} -p {password} -d . -H {target} --download '{share}$\megacorp_passwords.txt'
+# Delete a file
+$ smbmap -u {user} -p {password} -d . -H {target} --download '{share}$\ultra_hidden_backdoor.exe'
+```
+
+### Windows Recon: smbmap
+
+Objective: enumerate the shares and GET THE FLAG!
+
+```bash
+$ smbmap -u administrator -p password -d . -H $target -r
+[\/ SNIP \/]
+.\C\*
+	fr--r--r--               32 Mon Dec 21 21:27:10 2020	flag.txt
+[\/ SNIP \/]
+$ smbmap -u administrator -p password -d . -H $target --download 'C$\flag.txt'
+[+] Starting download: C$\flag.txt (32 bytes)
+[+] File output to: /root/10.4.26.56-C_flag.txt
+```
+
+Note to myself: when referring to a share, don't put colons after the share. Just use the dollar sign and backslash.
+
+## SMB: Samba 1
+
+In this section we're looking at a Linux SMB server. Nmap gets kinda confused, so we have to do some
+things manually.
+
+```bash
+$ nmap -sV -O -A [TARGET] 
+$ nmap -p445 [TARGET] --script smb-os-discovery
+$ msfconsole
+> use auxiliary/scanner/smb/smb-version
+auxiliary > set RHOSTS [TARGET]
+auxiliary > run
+$ nmblookup -A [TARGET]
+$ smbclient -L [TARGET] -N
+$ rcpclient -U "" -N [TARGEt]
+```
