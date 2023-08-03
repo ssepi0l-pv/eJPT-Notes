@@ -1,0 +1,567 @@
+# Information gathering
+
+Information gathering or reconnaissance is the first stage of any penetration test and it involves gathering
+or collecting information about a company or an individual. It's separated into two stages: passive and active 
+information gathering. The passive stage strives to recollect information about the target from external sources,
+thus not directly interacting with the objective. On the other hand, active information gathering actually
+interacts with the systems, be it through banner grabbing, port scans, interacting with users, etc.
+
+## Small list of information we may look for
+
+### In a passive scan
+- Identifying IP addresses and DNS information.
+- Domain names and public domain ownership information.
+- Email addresses, social media profiles and phone numbers.
+- The web technologies used by the target.
+- Leaked credentials.
+- Subdomains and hidden subdirectories.
+
+### In an active scan: 
+- Open ports on the target systems.
+- The internal infrastructure of the target organization.
+- Enumerating information from the target systems.
+
+# Website reconnaissance and footprinting
+
+Target is hackersploit.org
+
+```bash
+$ host hackersploit.org
+hackersploit.org has address 104.21.44.180
+hackersploit.org has address 172.67.202.99
+hackersploit.org has IPv6 address 2606:4700:3031::6815:2cb4
+hackersploit.org has IPv6 address 2606:4700:3036::ac43:ca63
+hackersploit.org mail is handled by 0 _dc-mx.2c2a3526b376.hackersploit.org.
+```
+
+Robots:
+
+```
+User-agent: *
+Disallow: /wp-content/uploads/wpo-plugins-tables-list.json
+
+# START YOAST BLOCK
+# ---------------------------
+User-agent: *
+Disallow:
+
+Sitemap: https://hackersploit.org/sitemap_index.xml
+# ---------------------------
+# END YOAST BLOCK
+```
+
+Sitemap_index:
+
+https://hackersploit.org/sitemap_index.xml
+
+Useful Firefox plugins for web recon:
+- Wappalyzer
+- BuiltWith
+In the terminal we can also use whatweb:
+
+```bash
+$ whatweb hackersploit.org
+http://hackersploit.org [301 Moved Permanently] Country[UNITED STATES][US], HTTPServer[cloudflare], IP[104.21.44.180], RedirectLocation[https://hackersploit.org/], UncommonHeaders[report-to,nel,cf-ray]
+https://hackersploit.org/ [403 Forbidden] Country[UNITED STATES][US], HTML5, HTTPServer[cloudflare], IP[104.21.44.180], Title[403 Forbidden][Title element contains newline(s)!], UncommonHeaders[referrer-policy,x-turbo-charged-by,cf-cache-status,report-to,nel,cf-ray,alt-svc]
+```
+
+Useful tool to have in mind during web reconnaissance:
+- httrack
+
+## Whois enumeration
+
+```bash 
+$ whois hackersploit.org
+Domain Name: hackersploit.org
+Registry Domain ID: 77f8fe62a425487cbefef4bf7e27d2ec-LROR
+Registrar WHOIS Server: whois.namecheap.com
+Registrar URL: http://www.namecheap.company
+[\/ SNIP \/]
+```
+
+## Website footprinting with Netcraft
+
+Access [Netcraft](https://sitereport.netcraft.com/). Then, we can pick a webpage to check
+what it's running. It automates the process from the previous manual reconnaissance
+techniques we've used before. 
+
+## DNS reconnaissance
+
+### dnsrecon
+
+```bash
+$ dnsrecon -d hackersploit.org
+[*] std: Performing General Enumeration against: hackersploit.org...
+[*] DNSSEC is configured for hackersploit.org
+[*] DNSKEYs:
+[\/ SNIP \/]
+```
+
+### dnsdumpster
+
+[dnsdumpster](https://dnsdumpster.com/) is another tool used in DNS recon. Using this tool
+we can discover a subdomain called forum.hackersploit.org. 
+
+## WAF detection
+
+```bash
+$ wafw00f https://hackersploit.org 
+
+                ______
+               /      \
+              (  W00f! )
+               \  ____/
+               ,,    __            404 Hack Not Found
+           |`-.__   / /                      __     __
+           /"  _/  /_/                       \ \   / /
+          *===*    /                          \ \_/ /  405 Not Allowed
+         /     )__//                           \   /
+    /|  /     /---`                        403 Forbidden
+    \\/`   \ |                                 / _ \
+    `\    /_\\_              502 Bad Gateway  / / \ \  500 Internal Error
+      `_____``-`                             /_/   \_\
+
+                        ~ WAFW00F : v2.2.0 ~
+        The Web Application Firewall Fingerprinting Toolkit
+    
+[*] Checking https://hackersploit.org
+[+] The site https://hackersploit.org is behind Cloudflare (Cloudflare Inc.) WAF.
+[~] Number of requests: 2
+```
+
+## Subdomain enumeration with Sublist3r
+
+```bash
+$ sublist3r -d hackersploit.org 
+
+                 ____        _     _ _     _   _____
+                / ___| _   _| |__ | (_)___| |_|___ / _ __
+                \___ \| | | | '_ \| | / __| __| |_ \| '__|
+                 ___) | |_| | |_) | | \__ \ |_ ___) | |
+                |____/ \__,_|_.__/|_|_|___/\__|____/|_|
+
+                # Coded By Ahmed Aboul-Ela - @aboul3la
+    
+[-] Enumerating subdomains now for hackersploit.org
+[-] Searching now in Google..
+[-] Searching now in Yahoo..
+[\/ SNIP \/]
+```
+
+## Google Dorking/Hacking
+
+Megabase: https://www.exploit-db.com/google-hacking-database
+
+```
+Operators:
+site:{site}   // Displays only pages within that domain plus subdomains.
+inurl:{text}    // Searches for specific words in URLs.
+intitle:{text}  // Searches for specific words in the title of a webpage.
+filetype:{text} // Searches for a specific filetype.
+(dork) {kword}  // Add a keyword after a dork.
+cache:{site}    // Check and older (cached) version of a webpage.
+```
+
+### Found something.
+
+This is not related to the course, although it kinda is. I found a vulnerability and reported it.
+It was a directory listing vulnerability. I sent the sysadmin an email with mitigations, how I found 
+it and my contact. I hope they fix it. 
+
+## Email harvesting with theHarvester
+
+```bash
+$ theharvester -d hackersploit.org -b crtsh,dnsdumpster,duckduckgo,yahoo,bing
+*******************************************************************
+*  _   _                                            _             *
+* | |_| |__   ___    /\  /\__ _ _ ____   _____  ___| |_ ___ _ __  *
+* | __|  _ \ / _ \  / /_/ / _` | '__\ \ / / _ \/ __| __/ _ \ '__| *
+* | |_| | | |  __/ / __  / (_| | |   \ V /  __/\__ \ ||  __/ |    *
+*  \__|_| |_|\___| \/ /_/ \__,_|_|    \_/ \___||___/\__\___|_|    *
+*                                                                 *
+* theHarvester 4.4.0                                              *
+* Coded by Christian Martorella                                   *
+* Edge-Security Research                                          *
+* cmartorella@edge-security.com                                   *
+*                                                                 *
+*******************************************************************
+
+[*] Target: zonetransfer.me 
+[\/ SNIP \/]
+```
+
+## Leaked credentials
+
+Check [Have I Been Pwned?](https://haveibeenpwned.com/) with the emails taken from *the harvesting...*
+
+
+# Active information gathering
+
+## DNS zone transfers.
+
+### What is a DNS?
+
+DNS is a protocol used to resolve domain names to IP addresses. During the 
+early days of the internet, users had to remember the IP addresses for any service
+they wanted to visit or interact with. DNS solves this issue. 
+
+A DNS is like a phone directory that contains all the domain names with their respective
+IP addresses. Popular ones are 1.1.1.1 (Cloudflare), 8.8.8.8 (Google), 8.8.4.4 (Google)
+
+### Type of DNS records
+
+| Record         | What it means              |
+|--------------- | -------------------------- |
+| A              | IPv4 Address               |
+| AAAA           | IPv6 Address               |
+| NS             | Reference to DNS           |
+| MX             | Resolves to mail server    |
+| CNAME          | Domain aliases             |
+| TXT            | TXT record                 |
+| HINFO          | Host information           |
+| SOA            | Domain authority           |
+| SRV            | Service records            |
+| PTR            | Resolves an IP to hostname |
+
+### DNS interrogation
+
+DNS interrogation is the process of enumerating DNS records for a specific domain.
+The objective of a DNS interrogation is to probe a DNS server to provide us with 
+DNS records for a specific domain. This process ca provide with important information
+like the IP address of the domain, subdomains, mail servers, etc.
+
+### DNS Zone Transfer 
+
+In certain cases, admins may want to copy DNS records from one server to another.
+This is the zone transfer process.
+
+If misconfigured and/or left unsecured, this functionality can be abused by attackers
+to copy the zone file from the primary DNS server to another DNS server.
+
+A DNS zone transfer can provide pentesters with a holistic view of an organization's layout.
+Furthermore, in some cases internal network addresses may be found on an organization's DNS
+servers.
+
+```bash
+$ dnsrecon -d zonetransfer.me 
+[*] std: Performing General Enumeration against: zonetransfer.me...
+[-] DNSSEC is not configured for zonetransfer.me
+[*] 	 SOA nsztm1.digi.ninja 81.4.108.41
+[\/ SNIP \/]
+# SOA is nsztm1.digi.ninja. so we will transfer from there.
+# dnsenum will do an automatic DNS transfer.
+$ dnsenum zonetransfer.me
+[\/ SNIP \/]
+Trying Zone Transfer for zonetransfer.me on nsztm2.digi.ninja ... 
+zonetransfer.me.                         7200     IN    SOA               (
+zonetransfer.me.                         300      IN    HINFO        "Casio"
+[\/ SNIP \/]
+# Manual zone transfer
+$ dig axfr @nsztm1.digi.ninja zonetransfer.me
+
+; <<>> DiG 9.18.16 <<>> axfr @nsztm1.digi.ninja zonetransfer.me
+; (1 server found)
+;; global options: +cmd
+zonetransfer.me.	7200	IN	SOA	nsztm1.digi.ninja. robin.digi.ninja. 2019100801 172800 900 1209600 3600
+[\/ SNIP \/]
+# Fierce is a tool locating non-contiguous IP spaces
+$ fierce --domain zonetransfer.me
+NS: nsztm1.digi.ninja. nsztm2.digi.ninja.
+SOA: nsztm1.digi.ninja. (81.4.108.41)
+Zone: success
+[\/ SNIP \/]
+```
+
+### More "in-depth" view on how to do DNS transfers
+
+Let's use zonetransfer.me as our target. First we need to get the SOA, or the 
+DNS authority (actually named Start of Authority). For that, we can run the 
+following command:
+
+```bash
+$ dig zonetransfer.me SOA
+[\/ SNIP \/]
+;; ANSWER SECTION:
+zonetransfer.me.	6923	IN	SOA	nsztm1.digi.ninja. robin.digi.ninja. 2019100801 172800 900 1209600 3600
+[\/ SNIP \/]
+```
+
+In this case we easily find the SOA. But it won't always be the case. Sometimes it might be trickier to find 
+the SOA; nevertheless, lets continue.
+
+Now that we have the SOA, we can try to do the zone transfer. For that, we'll run the following command:
+
+```bash
+$ dig axfr @nsztm1.digi.ninja. zonetransfer.me 
+; <<>> DiG 9.18.16 <<>> axfr @nsztm1.digi.ninja zonetransfer.me
+; (1 server found)
+;; global options: +cmd
+zonetransfer.me.	7200	IN	SOA	nsztm1.digi.ninja. robin.digi.ninja. 2019100801 172800 900 1209600 3600
+zonetransfer.me.	300	IN	HINFO	"Casio fx-700G" "Windows XP"
+zonetransfer.me.	301	IN	TXT	"google-site-verification=tyP28J7JAUHA9fw2sHXMgcCC0I6XBmmoVi04VlMewxA"
+[\/ SNIP \/]
+```
+
+Nice! We did the zone transfer. But wait. If we remember, when we used DNSdumpster on the webpage,
+we got 2 DNS servers. The second one was nsztm2.digi.ninja. We could try to run an AXFR on that server.
+
+```bash
+$ dig axfr @nsztm2.digi.ninja. zonetransfer.me 
+; <<>> DiG 9.18.16 <<>> axfr @nsztm2.digi.ninja. zonetransfer.me
+; (1 server found)
+;; global options: +cmd
+zonetransfer.me.	7200	IN	SOA	nsztm1.digi.ninja. robin.digi.ninja. 2019100801 172800 900 1209600 3600
+zonetransfer.me.	300	IN	HINFO	"Casio fx-700G" "Windows XP"
+zonetransfer.me.	301	IN	TXT	"google-site-verification=tyP28J7JAUHA9fw2sHXMgcCC0I6XBmmoVi04VlMewxA"
+[\/ SNIP \/]
+```
+
+Nice, although they appear to be the same. Maybe this could be useful in the future, maybe not. Who knows!
+
+### Host Discovery with Nmap
+
+```bash
+$ sudo nmap -sn 192.168.1.0/24 # Ping probes
+[\/ SNIP \/]
+$ sudo netdiscover -i enp0s3 -r 192.168.1.0/24 # ARP probing
+```
+
+### Port Scanning with Nmap
+
+```bash
+# Don't send ping probes, just SYN!
+$ nmap -Pn 10.4.19.210
+# Don't send ping probes and scan every port!
+$ nmap -Pn -p- 10.4.19.210
+# Don't send ping probes and scan only the given ports!
+$ nmap -Pn -p 53,80,443 1-1000 10.4.19.210
+# Fast scan go brr!!
+$ nmap -Pn -F 10.4.19.210
+# UDP port scan
+$ nmap -Pn -sU 10.4.19.210
+# Detect service versions!
+$ nmap -Pn -sV 10.4.19.210
+# Detect operating systems if possible
+$ nmap -Pn -O 10.4.19.210
+# Run default scripts on open ports
+$ nmap -Pn -sC 10.4.19.210
+# Make your scans slower or faster.
+# Smaller numbers are slower scans.
+# From T0 to T5.
+$ nmap -Pn -T1 -10.4.19.210
+# Output scan to file.
+$ nmap -Pn -oN scan.txt 10.4.19.210
+# Output scan to XML.
+$ nmap -Pn -oX scan.xml 10.4.19.210 
+```
+
+### It's lab time.
+
+Overview:
+*A Kali GUI machine and a target machine are provided to you. The target machine is running a Windows Firewall. Your task is to discover available live hosts and their open ports using Nmap and identify the running services and applications.*
+
+```bash
+# Scan results of "nmap -Pn -sV -O -Pn $TARGET"
+PORT      STATE SERVICE            VERSION
+80/tcp    open  http               HttpFileServer httpd 2.3
+135/tcp   open  msrpc              Microsoft Windows RPC
+139/tcp   open  netbios-ssn        Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds       Microsoft Windows Server 2008 R2 - 2012 microsoft-ds
+3389/tcp  open  ssl/ms-wbt-server?
+49154/tcp open  msrpc              Microsoft Windows RPC
+49155/tcp open  msrpc              Microsoft Windows RPC
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose
+Running: Microsoft Windows 2012
+OS CPE: cpe:/o:microsoft:windows_server_2012
+OS details: Microsoft Windows Server 2012
+Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
+```
+
+# Recon: footprinting and scanning.
+
+## Mapping a network.
+
+The purpose of mapping a network is to create a scope and give all the possible value the
+pentester can give. 
+
+Processes:
+-Physical access
+  - Physical security 
+  - OSINT 
+  - Social Engineering
+- Sniffing 
+  - Passive reconnaissance
+  - Watch network traffic
+- ARP
+  - Address resolution protocol
+    - Resolves IP to MAC addresses.
+    - "Who has {ip}? Tell {attacker}"
+    - "{ip} is at {mac}"
+    - ARP scanning.
+- ICMP
+  - RFC 792 
+  - Traceroute
+  - Ping 
+    - Sends type 8 packets: echo requests.
+- Tools
+  - Wireshark
+  - ARP-SCAN
+  - Ping
+  - Fping 
+  - Nmap 
+  - Zenmap
+
+## Tools
+
+### Wireshark
+
+To get a list of active hosts, we can go to Statistics -> Endpoints.
+
+### Ping/Fping/ARP
+
+```bash
+# Boring Ping. Does nothing but ping.
+$ ping google.com 
+# Ping's cooler little brother, Fping.
+$ fping -I enp0s3 -g 192.168.0.0/24 -a 2>/dev/null 
+# ARP-SCAN
+$ arp-scan -I enp0s3 -g 192.168.0.0/24 
+```
+
+### Zenmap
+
+Nmap but with GUI and topology tool. Pretty cool.
+
+## Port scanning
+
+When doing port scans, I like to use the `--packet-trace` flag and redirect the output to a file 
+or maybe do an -oN. 
+
+My scanning process goes like this:
+
+```bash
+$ fping -I enp0s3 -g 192.168.0.0/24 > alive 2>/dev/null 
+$ sudo arp-scan -I enp0s3 -g 192.168.0.0/24 --resolve --plain --format="${IP}\t--MAC: ${MAC}\t--Hostname: ${Name}"
+$ sed '/unreachable/d' alive
+$ cat alive | awk ' { print $1} ' | tee actually_alive
+$ rm alive
+$ nmap -iL actually_alive -sV --top-ports=100 # -Pn is unnecesary given we got our targets from fping
+```
+
+### Moar labs!!!
+
+Windows Recon with Zenmap!!!!
+
+Your task is to discover the live host machines using the provided Zenmap tool. 
+The subnet mask you need to focus on is "255.255.240.0" and CIDR 20. 
+
+Here we can simply run a Ping scan on the our entire network to get all our friend
+PCs.
+
+### Task: Scan the server 1 
+
+Target interface is eth1.
+
+We're presented with two different networks: 10.0.0.0/16 and 192.150.25.0/24. We know from the
+explanatory lab video that we have to check the 192.yadda yadda network. We'll first run ARP-scan and
+fping.
+
+```bash
+$ fping -I eth1 -g 192.150.25.0/24 > alive 2>/dev/null
+$ sed '/unreachable/d' alive
+$ cat alive | awk ' { print $1} ' | tee actually_alive
+$ arp-scan -I eth1 -g 192.150.25.0/24 
+$ nmap -sV -A -O -p- -iL actually_alive
+```
+
+### Task: Scan the server 2 (non-standard port locations)
+
+Target interface is eth1.
+
+Find the SMTP, FTP and DNS services. They're on non-standard ports.
+
+```bash
+$ fping -I eth1 -g 192.99.77.0/24
+$ nmap -sV -O 192.99.77.3 
+# Nothing was found.
+$ nmap -sV -O -p- 192.99.77.3 
+PORT    STATE SERVICE VERSION
+177/tcp open  domain  ISC BIND 9.10.3-P4 (Ubuntu Linux)
+# Only the DNS has been found. Let's run a ranged UDP scan, otherwise it'd take 1000 years.
+$ nmap -sU -p1-250 192.99.77.3
+PORT    STATE         SERVICE
+134/udp open|filtered ingres-net
+177/udp open|filtered xdmcp
+234/udp open|filtered unknown
+# Let's run a service scan.
+$ nmap -sU -p134,177,234 -sV 192.99.77.3 
+134/udp open|filtered ingres-net
+177/udp open          domain     ISC BIND 9.10.3-P4 (Ubuntu Linux)
+234/udp open          snmp       SNMPv1 server; net-snmp SNMPv3 server (public)
+$ tftp 192.99.77.3 134 
+# Establishes a connection.
+```
+
+### Task: Scan the server 3 (FUCKEN UDP SCAN)
+
+```
+$ nmap -sU -p- -T4 192.168.230.3
+# YEEEEEARS. Port 161. No accurate server is given,
+$ nmap -sUV -A -T4 -p 161 192.168.230.3 
+```
+
+# Recon: Host Enumeration.
+
+## Servers and services
+
+A server is that, a server. It's a computer that servers something up 
+for users or other devices. This services are open to windows, that is, 
+network ports. Certain services use certain ports, -- which in some cases may
+be modified -- and we have to access those ports to access the services served 
+by the server.
+
+## SMB discovery and mounting
+
+```powershell
+> net use [LETTER]: \\[DOMAIN]\[VOLUME/FOLDER]$ {PASSWORD} {/user:[USER]}
+> net use [LETTER/*] /delete
+```
+
+## SMB NSE scripts
+
+Some of the scripts are:
+
+| Script            | Function                                                                           |
+|------------------ | ---------------------------------------------------------------------------------- |
+| smb-protocols     | Enumerates protocols and dialects that the SMB is currently using.                 |
+| smb-security-mode | Dumps the security mode of the SMB share.                                          |
+| smb-enum-sessions | Used to enumerate the current sessions of the SMB share. (Users logged in)         |
+| smb-enum-shares   | Enumerates the existing shares in the SMB server.                                  |
+| smb-enum-users    | Attempts to enumerate all existing users within the SMB share.                     |
+| smb-server-stats  | Dumps the server statistics.                                                       |
+| smb-enum-domains  | Enumerates the existing domains.                                                   |
+| smb-enum-groups   | Enumerates the groups inside the share.                                            |
+| smb-enum-services | Enumerates the existing services.                                                  |
+| smb-ls            | List something within a share. Useful to combine with smb-enum-shares.             |
+| smb-enum-domains  | Enumerates the existing domains.                                                   |
+
+Usage:
+
+```bash
+$ nmap --script smb-protocols [SHARE] -p445
+$ nmap --script smb-security-mode [SHARE] -p445
+$ nmap --script smb-enum-sessions [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-shares [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-users [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-server-stats [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-domains [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-groups [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-services [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-ls [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ nmap --script smb-enum-shares,smb-ls [SHARE] -p445 --script-args {smbusername=username,smbpassword=password}
+$ 
+```
+
+Notes: if an IPC share is found, it could serve as a NULL session, or an anonymous user. The print share is used
+to do exactly that, print stuff.
