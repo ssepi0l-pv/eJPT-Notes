@@ -930,3 +930,191 @@ msf auxiliary > set USERPASS_FILE /usr/share/wordlists/metasploit/root_userpass.
 msf auxiliary > run
 # If a hit is given, an SSH session will be opened. It's terrible, though. 
 ```
+
+## HTTP Recon
+
+```bash
+$ whatweb [TARGET]
+$ dirb [TARGET]
+$ gobuster dir -u [TARGET URL] -w /path/to/dirs
+$ browsh --startup-url [TARGET URL] # For rendering websites in the terminal
+```
+
+## HTTP IIS: Nmap scripts
+
+| Script                          | Function                                           | Args                       |
+|-------------------------------- | -------------------------------------------------- | -------------------------- |
+| http-enum                       | Enumerates directories used by web applications.   | Check the docs.            |
+| http-headers                    | Performs a HEAD request.                           | path=[bool], useget=[dir]      |
+| http-methods                    | Checks what methods are allowed.                   | [.]url-path=[dir]              |
+| http-webdav-scan                | A script to detect WEBDAV installs.                | [.]path                      |
+
+Don't forget that IIS sucks cock and balls. Use Apache instead!
+
+## HTTP Apache
+
+| Script | Function         |
+| ------ | ---------------- |
+| banner | Grab the banner! |
+| 
+
+```bash
+msf5 > use auxiliary/scanner/http/http_version
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set RPORT [TARGET PORT]
+msf5 > use auxiliary/scanner/http/brute_dirs
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set RPORT [TARGET PORT]
+msf5 > use auxiliary/scanner/http/robots_txt
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set RPORT [TARGET PORT]
+$ curl [TARGET] | more # The more is not needed. It's used for readability, nothing else.
+# You can also redirect the output or append it (> or >>)
+$ wget [TARGET]
+$ lynx [TARGET URL]
+```
+
+### Apache HTTP Lab
+
+Objective: find robots.txt: what bot is blocked from indexing the webpage?
+
+```bash
+$ nmap -sV --script http-enum,banner $target 
+80/tcp open  http
+| http-enum: 
+|   /robots.txt: Robots file
+|   /data/: Potentially interesting directory w/ listing on 'apache/2.4.18 (ubuntu)'
+|   /dir/: Potentially interesting directory w/ listing on 'apache/2.4.18 (ubuntu)'
+|_  /src/: Potentially interesting directory w/ listing on 'apache/2.4.18 (ubuntu)'
+$ curl $target/robots.txt
+# Jackpot!
+```
+
+## MySQL Recon
+
+```bash
+$ 
+$ mysql -h [TARGET] -u [USER]
+  > select load_file("/path/to/file")
+  > show databases;
+  > use [DATABASE]
+    > select count(*) from [TABLE];
+    > select * from [TABLE];
+msf5 > use auxiliary/scanner/mysql/mysql_writable_dirs
+msf5 auxiliary > set verbose false
+msf5 auxiliary > setg RHOSTS [TARGET] # Setg = set global variable.
+msf5 auxiliary > set username [USERNAME]
+msf5 auxiliary > set password [PASSWORD]
+msf5 > use auxiliary/scanner/mysql/mysql_hashdump
+msf5 auxiliary > set RHOSTS [TARGET] # use if setg was not used
+msf5 auxiliary > set username [USERNAME]
+msf5 auxiliary > set password [PASSWORD]
+$ nmap --script mysql-empty-password -p3306 $target 
+$ nmap --script mysql-info -p3306 $target
+$ nmap --script mysql-users --script-args="mysqluser='[USER]',mysqlpass='[PASSWORD]'"
+$ nmap --script mysql-databases --script-args="mysqluser='[USER]',mysqlpass='[PASSWORD]'"
+$ nmap --script mysql-variables --script-args="mysqluser='[USER]',mysqlpass='[PASSWORD]'"
+$ nmap --script mysql-dump-hashes --script-args="username='[USER]',password='[PASSWORD]'"
+$ nmap --script mysql-query --script-args="username='[USER]',password='[PASSWORD]',query='select count(*) from [DATABASE].[TABLE]'"
+$ nmap --script mysql-audit --script-args="mysql-audit.username='[USER]',mysql-audit.password='[PASSWORD]',mysql-audit.filename='/usr/share/nmap/nselib/data/mysql-cis.audit'
+```
+
+## MySQL Dictionary Attacks
+
+```bash
+msf5 > use auxiliary/scanner/mysql/mysql_login
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set PASS_FILE /path/to/passfiles
+msf5 auxiliary > set USERNAME [USERNAME]
+$ hydra -L {/path/to/usr|[USERNAME]} -P /path/to/passwords [TARGET] mysql
+```
+
+## MSSQL Nmap Scripts
+
+| Script                 | Function                                                          | Args                             |
+|----------------------- | ----------------------------------------------------------------- | -------------------------------- |
+| ms-sql-info            | Get information about the MSSQL server.                           |                                  |
+| ms-sql-ntlm-info       | Get information about the MSSQL server interaction with NTLM.     | mssql.instance                   |
+| ms-sql-brute           | Bruteforce the login credentials.                                 | userdb, passdb, mssql.instance   |
+| ms-sql-empty-passwords | Searches for accounts without passwords.                          |                                  |
+| ms-sql-query           | Send a query. Recommended to use -oN                              | .username, .password, .query     | 
+| ms-sql-dump-hashes     | Dump account password hashes.                                     | .username, .password             |
+| ms-sql-xp-cmdshell     | Attempt to execute commands.                                      | username, password, .cmd       |
+
+Interesting queries:
+
+- SELECT * FROM master..syslogins 
+
+## MSSQL Metasploit.
+
+```bash
+msf5 > use auxiliary/scanner/mssql/mssql_login
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 auxiliary > set USER_FILE /path/to/users
+msf5 auxiliary > set PASS_FILE /path/to/passwords
+msf5 > use auxiliary/admin/mssql/mssql_enum
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 > use auxiliary/admin/mssql/mssql_enum_sql_logins
+msf5 auxiliary > set RHOSTS [TARGET]
+msf5 > use auxiliary/admin/mssql/mssql_exec
+msf5 auxiliary > set CMD [CMD]
+msf5 > use auxiliary/admin/mssql/mssql_enum_domain_accounts
+```
+
+# Recon: Vulnerability Assessment. 
+
+## VUlnerabilities.
+
+A vulnerability is a weakness in the computational logic found in software and hardware
+that, when exploited, results in negative impact to confidentiality, integrity and/or availability (CIA triad).
+
+Vulnerabilities may come from operating systems, software or hardware.  
+
+A CVE is an acronym for "Common Vulnerabilities and Exposures". A list of references for CVE's are as follows:
+
+- MITRE 
+- CVE-Details
+- NIST-NVD
+
+CVE's have identifiers or names. Some of them are:
+
+- CVE-2021-44228 (Log4J)
+- CVE-2014-0160 (Heartbleed)
+- CVE-2017-0141 (EternalBlue)
+
+### Understanding vulnerability detail pages.
+
+They contain descriptions, severity, references, weakness enumeration, known affected software configuration  
+
+The weakness enumeration helps categorize the weaknesses, vulnerability type, security issues associated with
+the vulnerability and possible prevention efforts to address detected security vulnerabilities.
+
+CPE is a structured naming scheme for information technology systems, software, and packages. Based upon the 
+generic syntax for Uniform Resource Identifiers (URI), CPE includes a formal name format, a method for checking 
+names against a system, and a description format for binding text and tests to a name.
+
+KEV or Known Exploited vulnerability is a section that only appears after the CVE has been added to CISA's Known 
+Exploited VUlnerabilities Catalog. 
+
+KASC or Known Affected Software Configuration is used to show what software or combination of software is considered
+to be vulnerable at the time of analysis. 
+
+Impact is very important. Our customers mostly care about this. That is because the impact is measured on how a vulnerability
+affects the confidentiality of information, the integrity of it and the availability.
+
+Helpful resource: https://nvd.nist.gov/vuln/vulnerability-detail-pages
+
+## 0days.
+
+Some exploits use vulnerabilities that have not been reported nor found. That's why it's called 0day: because it's zero days
+of knowing the vulnerability exists.
+
+### The human part of vulnerabilities.
+
+Social engineering and interpersonal skills are as useful as knowing how to type code. If you convince some dude to let you
+into a data center with his credentials (because you don't have yours yet, but your job is very critical to do, right?) AND an 
+unlocked terminal, you've already hacked the place. You pwned it.
+
+Tailgating, RFID cloning, shoulder surfing and more are common social engineering techniques used in the wild.
+
+
