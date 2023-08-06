@@ -1,3 +1,7 @@
+# Table of Contents:
+- [Information Gathering](#info_gathering)
+
+<a id="info_gathering"></a>
 # Information gathering
 
 Information gathering or reconnaissance is the first stage of any penetration test and it involves gathering
@@ -21,6 +25,7 @@ interacts with the systems, be it through banner grabbing, port scans, interacti
 - The internal infrastructure of the target organization.
 - Enumerating information from the target systems.
 
+<a id="web_recon"></a>
 # Website reconnaissance and footprinting
 
 Target is hackersploit.org
@@ -194,7 +199,7 @@ $ theharvester -d hackersploit.org -b crtsh,dnsdumpster,duckduckgo,yahoo,bing
 
 Check [Have I Been Pwned?](https://haveibeenpwned.com/) with the emails taken from *the harvesting...*
 
-
+<a id="act_infogath"></a>
 # Active information gathering
 
 ## DNS zone transfers.
@@ -378,6 +383,7 @@ OS details: Microsoft Windows Server 2012
 Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
 ```
 
+<a id="footprinting_scanning"></a>
 # Recon: footprinting and scanning.
 
 ## Mapping a network.
@@ -512,6 +518,7 @@ $ nmap -sU -p- -T4 192.168.230.3
 $ nmap -sUV -A -T4 -p 161 192.168.230.3 
 ```
 
+<a id="host_enum"></a>
 # Recon: Host Enumeration.
 
 ## Servers and services
@@ -1060,10 +1067,10 @@ msf5 > use auxiliary/admin/mssql/mssql_exec
 msf5 auxiliary > set CMD [CMD]
 msf5 > use auxiliary/admin/mssql/mssql_enum_domain_accounts
 ```
-
+<a id="vuln_asses"></a>
 # Recon: Vulnerability Assessment. 
 
-## VUlnerabilities.
+## Vulnerabilities.
 
 A vulnerability is a weakness in the computational logic found in software and hardware
 that, when exploited, results in negative impact to confidentiality, integrity and/or availability (CIA triad).
@@ -1080,7 +1087,7 @@ CVE's have identifiers or names. Some of them are:
 
 - CVE-2021-44228 (Log4J)
 - CVE-2014-0160 (Heartbleed)
-- CVE-2017-0141 (EternalBlue)
+- CVE-2017-0143 (EternalBlue)
 
 ### Understanding vulnerability detail pages.
 
@@ -1117,4 +1124,31 @@ unlocked terminal, you've already hacked the place. You pwned it.
 
 Tailgating, RFID cloning, shoulder surfing and more are common social engineering techniques used in the wild.
 
+## Case Studies
 
+### Heartbleed
+
+It was a vulnerability found on the Heartbeat plugin of OpenSSL. Mishandles TLS packets and allows for remote attackers
+to obtain access to the PKI infrastructure (Public Key infrastructure) and to private keys, which are the ones that encrypt 
+the data. 
+
+We can use Nmap to find potentially vulnerable OpenSSL implementations.
+
+```bash
+$ nmap -p443 --script ssl-enum-ciphers [TARGET]
+# Check the ciphers. Look at the TLS versions. Is version 1 enabled?
+$ nmap -p443 --script ssl-heartbleed [TARGET]
+# Checks for that vulnerability.
+```
+
+The anatomy of the attack is as follows:
+
+1. The attacker first sends a packet to the SSL service with a correct password and a correct length.
+2. The service responds OK and returns the password.
+3. The attacker now sends a new packet, but the password length does not match the actual length. 
+4. The service accepts the password and returns the password plus the following sections of memory.
+5. The attacker can ask for at most 64.000 characters of information.
+
+### EternalBlue (MS17-010)
+
+EternalBlue is a vulnerability that affects SMBv1 from Windows Vista upto Windows Server 2016.
