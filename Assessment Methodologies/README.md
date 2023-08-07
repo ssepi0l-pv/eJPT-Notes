@@ -1,4 +1,4 @@
-# Table of Contents (WiP):
+# Table of Contents
 - [Information Gathering](#1)
   - [Small list of information we may look for](#1.1)
     - [In a passive scan](#1.1.1)
@@ -77,6 +77,7 @@
     - [Log4Shell](#6.3.3)
   - [Nessus](#6.4)
   - [Vulnerability Assessment](#6.5)
+    - [Windows: Easy File Sharing Server Lab](#6.5.1)
 
 
 <a id="1"></a>
@@ -1372,6 +1373,7 @@ For later: I'd like to write a script based upon the [VSFTPD smiley face vulnera
 because, since I don't have a lot of expertise writing exploits or more "complex" scripts, I think a vulnerability 
 of this ~~easiness to exploit~~  simplicity would be a good place to start.
 
+<a id=6.5.1></a>
 ### Windows: Easy File Sharing Server Lab
 
 Objective: exploit the server and retrieve the flag.
