@@ -7,6 +7,9 @@
     - [Business needs](#1.1.3)
   - [Compliance](#1.2)
   - [Frameworks and maturity](#1.3)
+    - [Frameworks](#1.3.1)
+      - [So what?](#1.3.1.1)
+    - [Maturity](#1.3.2)
   - [Auditing](#1.4)
 - [Practices](#2)
   - [SCAP Scan and Stigviewer](#2.1)
@@ -77,8 +80,71 @@ if we don't make store transaction information or if we aren't a banking institu
 has a regulation in which all IT companies -- for example -- have to comply with ISO 27.001. And maybe we also do store PII in AWS, so we also have to comply
 with ISO 27.018.
 
+Some regulations put in some countries/continents are:
+
+- PCI DSS
+- HIPAA
+- GDPR
+- CCPA
+- SOX
+
 <a id=1.3></a>
 ## Frameworks and maturity
 
+<a id=1.3.1></a>
+### Frameworks 
+
+Some frameworks are: 
+
+- ISO 27.000
+    - ISO 27.001
+    - ISO 27.002
+  - It is broad in scope by default.
+  - It covers way more than just privacy, CIA triad and cybersecurity.
+  - Unlike what many people believe, ISO 27.000 is for all kinds of enterprises and sizes.
+- COBIT
+    - Control Objectives for Information and Related Technologies.  
+  - Created by ISACA
+  - Business focused and defines a set of generic processes for the management of IT.
+- NIST SP 800-53
+  - Catalog of security and privacy controls.
+  - US agencies are expected to comply with NIST security standards.
+  - NIST SP 800-53B provides a set of baseline security and privacy controls for information
+  security and organizations.
+- CIS
+  - Set of 18 points to mitigate the most prevalent cyber attacks.
+  - A defense-in-depth model to help prevent and detect malware.
+  - Offers a free tool for assessment (CIS-CSAT)
+
+<a id=1.3.1.1></a>
+#### So what?
+
+Our pentests will always come back to the organization, to our customer. We need to add value to 
+the organization, something useful to add into risk management. We can recommend certain mitigations
+for certain problems, but what if this don't match the maturity level of the enterprise? We need to 
+give severity to the problems at hand, and for that we have to understand what they see in security.
+
 <a id=1.4></a>
 ## Auditing
+
+Auditing is a way in which a company can check whether they're in compliance with one or more standard/s that
+they might have to comply with. Other scenarios might also be based around the idea of improving the company's 
+security, not necessarily just to comply with something, but to check in which aspects they're weaker and how 
+to solve those weaknesses.
+
+Audits might be internal (meaning that is ran by the same enterprise) or they might be external (they pay an 
+external company to come ~~pay them a visit that they will not forget~~ audit them). 
+
+You'll be interviewing CISOs, sysadmins, workers, We'll also review lots of paperwork. 
+
+Some technical controls might be audited automatically with tools like Nessus scans or Solarwinds.
+
+**LEARN TO TAKE GOOD NOTES!**. The best way is to use ~~Neovim~~ any app that you like.
+
+<a id=2></a>
+# Practices
+
+<a id=2.1></a>
+## SCAP Scan and Stigviewer
+
+TODO
