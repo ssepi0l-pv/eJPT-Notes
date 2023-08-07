@@ -65,7 +65,7 @@
   - [MySQL Recon](#5.16)
   - [MySQL Dictionary Attacks](#5.17)
   - [MSSQL Nmap Scripts](#5.18)
-  - [MSSQL Metasploit](#5.18)
+  - [MSSQL Metasploit](#5.19)
 - [Recon: Vulnerability Assessment](#6)
   - [Vulnerabilities](#6.1)
     - [Understanding vulnerability detail pages.](#6.1.1)
@@ -1186,7 +1186,7 @@ Interesting queries:
 
 - SELECT * FROM master..syslogins 
 
-<a id="5.18"></a>
+<a id="5.19"></a>
 ## MSSQL Metasploit.
 
 ```bash
