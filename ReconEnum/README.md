@@ -1,7 +1,82 @@
-# Table of Contents:
-- [Information Gathering](#info_gathering)
+# Table of Contents (WiP):
+- [Information Gathering](#1)
+  - [Small list of information we may look for](#1.1)
+    - [In a passive scan](#1.1.1)
+    - [In an active scan](#1.1.2)
+- [Website Reconnaissance](#2)
+  - [Whois Enumeration](#2.1)
+  - [Website footprinting with Netcraft](#2.2)
+  - [DNS Reconnaissance](#2.3)
+    - [dnsrecon](#2.3.1)
+    - [dnsrecon](#2.3.2)
+  - [WAF detection](#2.4)
+  - [Subdomain enumeration with Sublist3r](#2.5)
+  - [Google Hacking/Dorking](#2.6)
+    - [Found something.](#2.6.1)
+  - [Email gathering with theHarvester](#2.7)
+  - [Leaked credentials](#2.8)
+- [Active information gathering.](#3)
+  - [DNS zone transfers](#3.1)
+    - [What is a DNS?](#3.1.1)
+    - [Types of DNS records](#3.1.2)
+    - [DNS interrogation](#3.1.3)
+    - [DNS zone transfers](#3.1.4)
+    - [More "in-depth" view on how to do DNS transfers](#3.1.5)
+  - [Host discovery with Nmap](#3.2)
+    - [Port Scanning with Nmap](#3.2.1)
+    - [It's lab time.](#3.2.2)
+- [Recon: footprinting and scanning](#4)
+  - [Mapping a network](#4.1)
+  - [Tools](#4.2)
+    - [Wireshark](#4.2.1)
+    - [Ping/Fping/ARP](#4.2.2)
+    - [Zenmap](4.2.3)
+  - [Port scanning](#4.3)
+    - [Moar labs!!!](#4.3.1)
+    - [Task: Scan the server 1](#4.3.2)
+    - [Task: Scan the server (non-standard port locations)](#4.3.3)
+    - [Task: Scan the server 3 (FUCKEN UDP SCAN)](#4.3.4)
+- [Recon: Host Enumeration](#5)
+  - [Servers and services](#5.1)
+  - [SMB Discovery and Mounting](#5.2)
+  - [SMB NSE scripts](#5.3)
+    - [Windows Recon: SMB scripts lab](#5.3.1)
+  - [SMB: SMBmap](#5.4)
+    - [Windows Recon: SMBmap lab](#5.4.1)
+  - [SMB: Samba 1](#5.5)
+    - [SMB: Samba 1 Lab](#5.5.1)
+  - [SMB: Samba 2](#5.6)
+    - [SMB: Samba 2 Lab](#5.6.1)
+  - [SMB: Samba 3](#5.7)
+    - [SMB: Samba 3 Lab](#5.7.1)
+  - [SMB Dictionary Attack](#5.8)
+    - [SMB Dictionary Attack Lab](#5.8.1)
+  - [FTP service enumeration.](#5.9)
+    - [ProFTP Recon: Basics lab](#5.9.1)
+  - [VSFTPD Recon: Basics](#5.10)
+    - [VSFTPD Recon: Basics lab](#5.10.1)
+  - [SSH Recon: Basics](#5.11)
+  - [SSH Dictionary Attacks](#5.12)
+    - [SSH Dictionary Attacks: Lab](#5.12.1)
+  - [HTTP Recon](#5.13)
+  - [HTTP IIS: Nmap scripts](#5.14)
+  - [HTTP Apache](#5.15)
+    - [Apache HTTP Lab](#5.15.1)
+  - [MySQL Recon](#5.16)
+  - [MySQL Dictionary Attacks](#5.17)
+  - [MSSQL Nmap Scripts](#5.18)
+  - [MSSQL Metasploit](#5.18)
+- [Recon: Vulnerability Assessment](#6)
+  - [Vulnerabilities](#6.1)
+    - [Understanding vulnerability detail pages.](#6.1.1)
+  - [0days](#6.2)
+    - [The human side of vulnerabilities.](#6.2.1)
+  - [Case studies](#6.3)
+    - [Heartbleed](#6.3.1)
+    - [EternalBlue](#6.3.2)
 
-<a id="info_gathering"></a>
+
+<a id="1"></a>
 # Information gathering
 
 Information gathering or reconnaissance is the first stage of any penetration test and it involves gathering
@@ -10,8 +85,10 @@ information gathering. The passive stage strives to recollect information about 
 thus not directly interacting with the objective. On the other hand, active information gathering actually
 interacts with the systems, be it through banner grabbing, port scans, interacting with users, etc.
 
+<a id="1.1"></a>
 ## Small list of information we may look for
 
+<a id="1.1.1"></a>
 ### In a passive scan
 - Identifying IP addresses and DNS information.
 - Domain names and public domain ownership information.
@@ -20,12 +97,13 @@ interacts with the systems, be it through banner grabbing, port scans, interacti
 - Leaked credentials.
 - Subdomains and hidden subdirectories.
 
+<a id="1.1.2"></a>
 ### In an active scan: 
 - Open ports on the target systems.
 - The internal infrastructure of the target organization.
 - Enumerating information from the target systems.
 
-<a id="web_recon"></a>
+<a id="2"></a>
 # Website reconnaissance and footprinting
 
 Target is hackersploit.org
@@ -73,6 +151,7 @@ https://hackersploit.org/ [403 Forbidden] Country[UNITED STATES][US], HTML5, HTT
 Useful tool to have in mind during web reconnaissance:
 - httrack
 
+<a id="2.1"></a>
 ## Whois enumeration
 
 ```bash 
@@ -84,14 +163,17 @@ Registrar URL: http://www.namecheap.company
 [\/ SNIP \/]
 ```
 
+<a id="2.2"></a>
 ## Website footprinting with Netcraft
 
 Access [Netcraft](https://sitereport.netcraft.com/). Then, we can pick a webpage to check
 what it's running. It automates the process from the previous manual reconnaissance
 techniques we've used before. 
 
+<a id="2.3"></a>
 ## DNS reconnaissance
 
+<a id="2.3.1"></a>
 ### dnsrecon
 
 ```bash
@@ -102,11 +184,13 @@ $ dnsrecon -d hackersploit.org
 [\/ SNIP \/]
 ```
 
+<a id="2.3.2"></a>
 ### dnsdumpster
 
 [dnsdumpster](https://dnsdumpster.com/) is another tool used in DNS recon. Using this tool
 we can discover a subdomain called forum.hackersploit.org. 
 
+<a id="2.4"></a>
 ## WAF detection
 
 ```bash
@@ -134,6 +218,7 @@ $ wafw00f https://hackersploit.org
 [~] Number of requests: 2
 ```
 
+<a id="2.5"></a>
 ## Subdomain enumeration with Sublist3r
 
 ```bash
@@ -153,6 +238,7 @@ $ sublist3r -d hackersploit.org
 [\/ SNIP \/]
 ```
 
+<a id="2.6"></a>
 ## Google Dorking/Hacking
 
 Megabase: https://www.exploit-db.com/google-hacking-database
@@ -167,12 +253,14 @@ filetype:{text} // Searches for a specific filetype.
 cache:{site}    // Check and older (cached) version of a webpage.
 ```
 
+<a id="2.6.1"></a>
 ### Found something.
 
 This is not related to the course, although it kinda is. I found a vulnerability and reported it.
 It was a directory listing vulnerability. I sent the sysadmin an email with mitigations, how I found 
 it and my contact. I hope they fix it. 
 
+<a id="2.7"></a>
 ## Email harvesting with theHarvester
 
 ```bash
@@ -195,15 +283,18 @@ $ theharvester -d hackersploit.org -b crtsh,dnsdumpster,duckduckgo,yahoo,bing
 [\/ SNIP \/]
 ```
 
+<a id="2.8"></a>
 ## Leaked credentials
 
 Check [Have I Been Pwned?](https://haveibeenpwned.com/) with the emails taken from *the harvesting...*
 
-<a id="act_infogath"></a>
+<a id="3"></a>
 # Active information gathering
 
+<a id="3.1"></a>
 ## DNS zone transfers.
 
+<a id="3.1.1"></a>
 ### What is a DNS?
 
 DNS is a protocol used to resolve domain names to IP addresses. During the 
@@ -213,6 +304,7 @@ they wanted to visit or interact with. DNS solves this issue.
 A DNS is like a phone directory that contains all the domain names with their respective
 IP addresses. Popular ones are 1.1.1.1 (Cloudflare), 8.8.8.8 (Google), 8.8.4.4 (Google)
 
+<a id="3.1.2"></a>
 ### Type of DNS records
 
 | Record         | What it means              |
@@ -228,6 +320,7 @@ IP addresses. Popular ones are 1.1.1.1 (Cloudflare), 8.8.8.8 (Google), 8.8.4.4 (
 | SRV            | Service records            |
 | PTR            | Resolves an IP to hostname |
 
+<a id="3.1.3"></a>
 ### DNS interrogation
 
 DNS interrogation is the process of enumerating DNS records for a specific domain.
@@ -235,6 +328,7 @@ The objective of a DNS interrogation is to probe a DNS server to provide us with
 DNS records for a specific domain. This process ca provide with important information
 like the IP address of the domain, subdomains, mail servers, etc.
 
+<a id="3.1.4"></a>
 ### DNS Zone Transfer 
 
 In certain cases, admins may want to copy DNS records from one server to another.
@@ -277,6 +371,7 @@ Zone: success
 [\/ SNIP \/]
 ```
 
+<a id="3.1.5"></a>
 ### More "in-depth" view on how to do DNS transfers
 
 Let's use zonetransfer.me as our target. First we need to get the SOA, or the 
@@ -323,7 +418,8 @@ zonetransfer.me.	301	IN	TXT	"google-site-verification=tyP28J7JAUHA9fw2sHXMgcCC0I
 
 Nice, although they appear to be the same. Maybe this could be useful in the future, maybe not. Who knows!
 
-### Host Discovery with Nmap
+<a id="3.2"></a>
+## Host Discovery with Nmap
 
 ```bash
 $ sudo nmap -sn 192.168.1.0/24 # Ping probes
@@ -331,6 +427,7 @@ $ sudo nmap -sn 192.168.1.0/24 # Ping probes
 $ sudo netdiscover -i enp0s3 -r 192.168.1.0/24 # ARP probing
 ```
 
+<a id="3.2.1"></a>
 ### Port Scanning with Nmap
 
 ```bash
@@ -360,6 +457,7 @@ $ nmap -Pn -oN scan.txt 10.4.19.210
 $ nmap -Pn -oX scan.xml 10.4.19.210 
 ```
 
+<a id="3.2.2"></a>
 ### It's lab time.
 
 Overview:
@@ -383,9 +481,10 @@ OS details: Microsoft Windows Server 2012
 Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
 ```
 
-<a id="footprinting_scanning"></a>
+<a id="4"></a>
 # Recon: footprinting and scanning.
 
+<a id="4.1"></a>
 ## Mapping a network.
 
 The purpose of mapping a network is to create a scope and give all the possible value the
@@ -419,12 +518,15 @@ Processes:
   - Nmap 
   - Zenmap
 
+<a id="4.2"></a>
 ## Tools
 
+<a id="4.2.1"></a>
 ### Wireshark
 
 To get a list of active hosts, we can go to Statistics -> Endpoints.
 
+<a id="4.2.2"></a>
 ### Ping/Fping/ARP
 
 ```bash
@@ -436,10 +538,12 @@ $ fping -I enp0s3 -g 192.168.0.0/24 -a 2>/dev/null
 $ arp-scan -I enp0s3 -g 192.168.0.0/24 
 ```
 
+<a id="4.2.3"></a>
 ### Zenmap
 
 Nmap but with GUI and topology tool. Pretty cool.
 
+<a id="4.3"></a>
 ## Port scanning
 
 When doing port scans, I like to use the `--packet-trace` flag and redirect the output to a file 
@@ -456,6 +560,7 @@ $ rm alive
 $ nmap -iL actually_alive -sV --top-ports=100 # -Pn is unnecesary given we got our targets from fping
 ```
 
+<a id="4.3.1"></a>
 ### Moar labs!!!
 
 Windows Recon with Zenmap!!!!
@@ -466,6 +571,7 @@ The subnet mask you need to focus on is "255.255.240.0" and CIDR 20.
 Here we can simply run a Ping scan on the our entire network to get all our friend
 PCs.
 
+<a id="4.3.2"></a>
 ### Task: Scan the server 1 
 
 Target interface is eth1.
@@ -482,6 +588,7 @@ $ arp-scan -I eth1 -g 192.150.25.0/24
 $ nmap -sV -A -O -p- -iL actually_alive
 ```
 
+<a id="4.3.3"></a>
 ### Task: Scan the server 2 (non-standard port locations)
 
 Target interface is eth1.
@@ -510,6 +617,7 @@ $ tftp 192.99.77.3 134
 # Establishes a connection.
 ```
 
+<a id="4.3.4"></a>
 ### Task: Scan the server 3 (FUCKEN UDP SCAN)
 
 ```
@@ -518,9 +626,10 @@ $ nmap -sU -p- -T4 192.168.230.3
 $ nmap -sUV -A -T4 -p 161 192.168.230.3 
 ```
 
-<a id="host_enum"></a>
+<a id="5"></a>
 # Recon: Host Enumeration.
 
+<a id="5.1"></a>
 ## Servers and services
 
 A server is that, a server. It's a computer that servers something up 
@@ -529,6 +638,7 @@ network ports. Certain services use certain ports, -- which in some cases may
 be modified -- and we have to access those ports to access the services served 
 by the server.
 
+<a id="5.2"></a>
 ## SMB discovery and mounting
 
 ```powershell
@@ -536,6 +646,7 @@ by the server.
 > net use [LETTER/*] /delete
 ```
 
+<a id="5.3"></a>
 ## SMB NSE scripts
 
 Some of the scripts are:
@@ -574,6 +685,7 @@ $ nmap --script smb-os-discovery [TARGET] -p445
 Notes: if an IPC share is found, it could serve as a NULL session, or an anonymous user. The print share is used
 to do exactly that, print stuff.
 
+<a id="5.3.1"></a>
 ### Windows Recon: SMB scripts lab.
 
 Objectives: 
@@ -607,6 +719,7 @@ $ nmap -p445 $target --script smb-enum-* --script-args smbusername=administrator
 [\/ SNIP \/]
 ```
 
+<a id="5.4"></a>
 ## SMB: SMBmap
 
 ```bash
@@ -626,6 +739,7 @@ $ smbmap -u {user} -p {password} -d . -H {target} --download '{share}$\megacorp_
 $ smbmap -u {user} -p {password} -d . -H {target} --delete '{share}$\ultra_hidden_backdoor.exe'
 ```
 
+<a id="5.4.1"></a>
 ### Windows Recon: smbmap
 
 Objective: enumerate the shares and GET THE FLAG!
@@ -643,6 +757,7 @@ $ smbmap -u administrator -p password -d . -H $target --download 'C$\flag.txt'
 
 Note to myself: when referring to a share, don't put colons after the share. Just use the dollar sign and backslash.
 
+<a id="5.5"></a>
 ## SMB: Samba 1
 
 In this section we're looking at a Linux SMB server. Nmap gets kinda confused, so we have to do some
@@ -660,6 +775,7 @@ $ smbclient -L [TARGET] -N
 $ rpcclient -U "" -N [TARGEt]
 ```
 
+<a id="5.5.1"></a>
 ### SMB: Samba 1 Lab
 
 Objective: Find the Netbios-ssn workgroup of the server.
@@ -670,6 +786,7 @@ $ nmap -sV -A -T4 $target
 445/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: RECONLABS)
 ```
 
+<a id="5.6"></a>
 ## SMB: Samba 2 
 
 ```bash
@@ -687,6 +804,7 @@ rpcclient > enumdomusers
 rpcclient > lookupnames [USER]
 ```
 
+<a id="5.6.1"></a>
 ### SMB: Samba 2 Lab
 
 Objective: find the admin SID.
@@ -716,6 +834,7 @@ rpcclient > lookupnames admin
 admin S-1-5-21-4056189605-2085045094-1961111545-1005 (User: 1)
 ```
 
+<a id="5.7"></a>
 ## SMB: Samba 3
 
 ```bash
@@ -728,6 +847,7 @@ $ rpcclient -U "" -N [TARGEt]
 rpcclient $> enumdomgroups
 ```
 
+<a id="5.7.1"></a>
 ### SMB: Samba 3 Lab
 
 Objective: get teh flag!11!
@@ -773,6 +893,7 @@ smb: \secret\> get flag
 # using the cat command.
 ```
 
+<a id="5.8"></a>
 ## SMB Dictionary Attack
 
 ```bash
@@ -789,6 +910,7 @@ msf5 auxiliary > set RHOSTS [TARGET]
 $ enum4linux -r -U [USER] -p [PASSWORD] [TARGET]
 ```
 
+<a id="5.8.1"></a>
 ### SMB Dictionary Attack Lab
 
 Objective: get da root flag! Crack into Jane's and Admin's accounts, although no password
@@ -839,6 +961,7 @@ $ tar xfv flag.tar.gz
 
 And we're good to go.
 
+<a id="5.9"></a>
 ## FTP service enumeration
 
 ```bash
@@ -849,6 +972,7 @@ $ hydra -L /usr/share/metasploit-framework/data/wordlists/common_users.txt -P /u
 $ nmap --script ftp-brute --script-args userdb=/path/to/users -p21 [TARGEt]
 ```
 
+<a id="5.9.1"></a>
 ### ProFTP Recon: Basics lab 
 
 Objective: get the password for the auditor user and the flag!
@@ -870,12 +994,14 @@ ftp > get secret.txt
 # Lesgooooo!
 ```
 
+<a id="5.10"></a>
 ## VSFTPD Recon: Basics
 
 ```bash
 $ nmap -sV -A --script ftp-anon
 ```
 
+<a id="5.10.1"></a>
 ### VSFTPD Recon: Basics Lab
 
 Objective: get the flag, although we don't have a user or password...
@@ -896,8 +1022,7 @@ ftp > get flag
 # Good to go...
 ```
 
-## SSH Recon
-
+<a id="5.11"></a>
 ## SSH Recon: Basics
 
 | Script            | Function                                     | Args                                      |
@@ -909,6 +1034,7 @@ ftp > get flag
 
 Note to self: look for noauth methods.
 
+<a id="5.12"></a>
 ## SSH Dictionary Attacks
 
 ```bash
@@ -920,7 +1046,8 @@ msf auxiliary > set USERPASS_FILE /path/to/users
 msf auxiliary > run
 ```
 
-## SSH Dictionary Attacks: Lab
+<a id="5.12.1"></a>
+### SSH Dictionary Attacks: Lab
 
 Objective: find the "student" password with Hydra, the administrator with nmap and root with msfconsole.
 
@@ -938,6 +1065,7 @@ msf auxiliary > run
 # If a hit is given, an SSH session will be opened. It's terrible, though. 
 ```
 
+<a id="5.13"></a>
 ## HTTP Recon
 
 ```bash
@@ -947,6 +1075,7 @@ $ gobuster dir -u [TARGET URL] -w /path/to/dirs
 $ browsh --startup-url [TARGET URL] # For rendering websites in the terminal
 ```
 
+<a id="5.14"></a>
 ## HTTP IIS: Nmap scripts
 
 | Script                          | Function                                           | Args                       |
@@ -958,6 +1087,7 @@ $ browsh --startup-url [TARGET URL] # For rendering websites in the terminal
 
 Don't forget that IIS sucks cock and balls. Use Apache instead!
 
+<a id="5.15"></a>
 ## HTTP Apache
 
 | Script | Function         |
@@ -981,6 +1111,7 @@ $ wget [TARGET]
 $ lynx [TARGET URL]
 ```
 
+<a id="5.15.1"></a>
 ### Apache HTTP Lab
 
 Objective: find robots.txt: what bot is blocked from indexing the webpage?
@@ -997,6 +1128,7 @@ $ curl $target/robots.txt
 # Jackpot!
 ```
 
+<a id="5.16"></a>
 ## MySQL Recon
 
 ```bash
@@ -1026,6 +1158,7 @@ $ nmap --script mysql-query --script-args="username='[USER]',password='[PASSWORD
 $ nmap --script mysql-audit --script-args="mysql-audit.username='[USER]',mysql-audit.password='[PASSWORD]',mysql-audit.filename='/usr/share/nmap/nselib/data/mysql-cis.audit'
 ```
 
+<a id="5.17"></a>
 ## MySQL Dictionary Attacks
 
 ```bash
@@ -1036,6 +1169,7 @@ msf5 auxiliary > set USERNAME [USERNAME]
 $ hydra -L {/path/to/usr|[USERNAME]} -P /path/to/passwords [TARGET] mysql
 ```
 
+<a id="5.18"></a>
 ## MSSQL Nmap Scripts
 
 | Script                 | Function                                                          | Args                             |
@@ -1052,6 +1186,7 @@ Interesting queries:
 
 - SELECT * FROM master..syslogins 
 
+<a id="5.18"></a>
 ## MSSQL Metasploit.
 
 ```bash
@@ -1067,9 +1202,10 @@ msf5 > use auxiliary/admin/mssql/mssql_exec
 msf5 auxiliary > set CMD [CMD]
 msf5 > use auxiliary/admin/mssql/mssql_enum_domain_accounts
 ```
-<a id="vuln_asses"></a>
+<a id="6"></a>
 # Recon: Vulnerability Assessment. 
 
+<a id="6.1"></a>
 ## Vulnerabilities.
 
 A vulnerability is a weakness in the computational logic found in software and hardware
@@ -1089,6 +1225,7 @@ CVE's have identifiers or names. Some of them are:
 - CVE-2014-0160 (Heartbleed)
 - CVE-2017-0143 (EternalBlue)
 
+<a id="6.1.1"></a>
 ### Understanding vulnerability detail pages.
 
 They contain descriptions, severity, references, weakness enumeration, known affected software configuration  
@@ -1111,12 +1248,14 @@ affects the confidentiality of information, the integrity of it and the availabi
 
 Helpful resource: https://nvd.nist.gov/vuln/vulnerability-detail-pages
 
+<a id="6.2"></a>
 ## 0days.
 
 Some exploits use vulnerabilities that have not been reported nor found. That's why it's called 0day: because it's zero days
 of knowing the vulnerability exists.
 
-### The human part of vulnerabilities.
+<a id="6.2.1"></a>
+### The human side of vulnerabilities.
 
 Social engineering and interpersonal skills are as useful as knowing how to type code. If you convince some dude to let you
 into a data center with his credentials (because you don't have yours yet, but your job is very critical to do, right?) AND an 
@@ -1124,8 +1263,10 @@ unlocked terminal, you've already hacked the place. You pwned it.
 
 Tailgating, RFID cloning, shoulder surfing and more are common social engineering techniques used in the wild.
 
+<a id="6.3"></a>
 ## Case Studies
 
+<a id="6.3.1"></a>
 ### Heartbleed
 
 It was a vulnerability found on the Heartbeat plugin of OpenSSL. Mishandles TLS packets and allows for remote attackers
@@ -1149,6 +1290,7 @@ The anatomy of the attack is as follows:
 4. The service accepts the password and returns the password plus the following sections of memory.
 5. The attacker can ask for at most 64.000 characters of information.
 
+<a id="6.3.2"></a>
 ### EternalBlue (MS17-010)
 
 EternalBlue is a vulnerability that affects SMBv1 from Windows Vista upto Windows Server 2016.
