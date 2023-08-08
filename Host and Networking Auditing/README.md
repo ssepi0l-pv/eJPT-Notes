@@ -1,4 +1,4 @@
-# Table of Contents (WiP)
+# Table of Contents
 
 - [Assessment methodologies](#1)
   - [Cybersecurity Basics](#1.1)
@@ -12,9 +12,6 @@
     - [Maturity](#1.3.2)
   - [Auditing](#1.4)
 - [Practices](#2)
-  - [SCAP Scan and Stigviewer](#2.1)
-  - [Nmap](#2.2)
-  - [Nessus](2.3)
 
 <a id=1></a>
 # Assessment methodologies
@@ -144,7 +141,5 @@ Some technical controls might be audited automatically with tools like Nessus sc
 <a id=2></a>
 # Practices
 
-<a id=2.1></a>
-## SCAP Scan and Stigviewer
-
-TODO
+In this case, I don't think it's necessary to explain the practice side of this course.
+Learn to use Nmap, SCAP and Nessus.
