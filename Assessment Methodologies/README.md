@@ -1032,7 +1032,7 @@ ftp > get flag
 | Script            | Function                                     | Args                                      |
 |------------------ | -------------------------------------------- | ----------------------------------------- |
 | ssh2-enum-algos   | Enumerates accepted encryption algorithms.   | None                                      |
-| ssh2-hostkey      | Shows SSH keys.                              | ssh-hostkey.known-hosts-path, ssh-hostkey |
+| ssh-hostkey       | Shows SSH keys.                              | ssh-hostkey.known-hosts-path, ssh-hostkey |
 | ssh-auth-methods  | Returns authentication methods.              | ssh.user                                  |
 | ssh-brute         | Bruteforce SSH                               | userdb, passdb, ssh-brute.timeout, etc    |
 
