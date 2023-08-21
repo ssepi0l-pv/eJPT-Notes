@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="675" height="487">
+	<g transform="translate(230,228)" stroke="#000" stroke-width="1.9">
+		<circle r="224" fill="#91ff96"/>
+		<circle r="178" fill="#fffa91"/>
+		<circle r="132" fill="#ffd291"/>
+		<circle r="86" fill="#ff9191"/>
+	</g>
+
+	<g text-anchor="middle" font-size="20" font-weight="400" font-family="Bitstream Vera Sans">
+		<g transform="translate(230,232)">
+			<text y="-200">Ring 3</text>
+			<text y="-152">Ring 2</text>
+			<text y="-104">Ring 1</text>
+			<text y="-56">Ring 0</text>
+			<text y="0">Kernel</text>
+			<text y="104">Device drivers</text>
+			<text y="152">Device drivers</text>
+			<text y="200">Applications</text>
+		</g>
+		<text x="550" y="74">Least privileged</text>
+		<text x="550" y="313">Most privileged</text>
+	</g>
+
+	<g transform="translate(530,89.5)" stroke="#000">
+		<rect width="40" height="50" fill="#91ff96"/>
+		<rect y="50" width="40" height="50" fill="#fffc91"/>
+		<rect y="100" width="40" height="50" fill="#ffd291"/>
+		<rect y="150" width="40" height="50" fill="#ff9191"/>
+		<rect width="40" height="200" fill="none" stroke-width="1.5"/>
+	</g>
+</svg>
